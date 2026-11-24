@@ -1,0 +1,6 @@
+{
+  "name": "Solar Wing",
+  "description": "High-speed 60fps aerial dash-combat arena game with zero-GC simulation and procedural audio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
