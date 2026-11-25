@@ -167,6 +167,48 @@ export const UpgradeIcon: React.FC<{ id: UpgradeId; color: string }> = ({ id, co
       {id === 'hull_plating' && (
         <path d="M12 5 L18 8 V13 C18 16.5 15 18.5 12 19.5 C9 18.5 6 16.5 6 13 V8 Z" fill={color} />
       )}
+      {id === 'wingman_drone' && (
+        <path d="M12 5 L18 16 L12 13 L6 16 Z" fill={color} />
+      )}
     </svg>
   );
 };
+
+export const TrophyIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+    <path d="M4 22h16" />
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+  </svg>
+);
+
+export const PilotIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M5 20a7 7 0 0 1 14 0" />
+  </svg>
+);
+
+export const AchievementBadgeIcon: React.FC<{ unlocked: boolean; accent: string }> = ({
+  unlocked,
+  accent,
+}) => (
+  <svg viewBox="0 0 24 24" className="w-7 h-7 shrink-0" aria-hidden="true">
+    <polygon
+      points="12,2 21,7 21,17 12,22 3,17 3,7"
+      fill={unlocked ? accent : '#0f172a'}
+      stroke={unlocked ? '#0b111e' : '#334155'}
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    {unlocked ? (
+      <path d="M8.5 12.2 L11 14.8 L16 9.5" stroke="#0b111e" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    ) : (
+      <circle cx="12" cy="12" r="3" fill="none" stroke="#475569" strokeWidth="1.8" />
+    )}
+  </svg>
+);
+

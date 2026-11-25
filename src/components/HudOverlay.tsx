@@ -1,4 +1,5 @@
 import React from 'react';
+import { ACHIEVEMENT_CATALOG } from '../game/achievements';
 import type { HudSnapshot } from '../game/types';
 import {
   DashIcon,
@@ -6,13 +7,17 @@ import {
   NovaIcon,
   PauseIcon,
   RestartIcon,
+  TrophyIcon,
   VitalitySocketIcon,
 } from './GameIcons';
 
 interface HudOverlayProps {
   hud: HudSnapshot;
+  unlockedCount: number;
   dashBarRef: React.RefObject<HTMLDivElement | null>;
   novaBarRef: React.RefObject<HTMLDivElement | null>;
+  onOpenAchievements: () => void;
+  onToggleAutoFire: () => void;
   onToggleMute: () => void;
   onPause: () => void;
   onRestart: () => void;
@@ -20,8 +25,11 @@ interface HudOverlayProps {
 
 export const HudOverlay: React.FC<HudOverlayProps> = ({
   hud,
+  unlockedCount,
   dashBarRef,
   novaBarRef,
+  onOpenAchievements,
+  onToggleAutoFire,
   onToggleMute,
   onPause,
   onRestart,
@@ -54,7 +62,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
             </div>
           </div>
 
-          {/* Dash & Nova Charge Bars (mutated directly at 60fps via refs) */}
+          {/* Dash & Nova Charge Bars (mutated directly at 60-120fps via refs) */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <DashIcon />
@@ -111,10 +119,10 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
           <div className="flex items-baseline gap-5 text-right">
             <div>
               <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400 hud-stroke">
-                Wave
+                {hud.levelName}
               </div>
               <div className="font-display text-2xl font-extrabold leading-none text-slate-100 tabular-nums hud-stroke">
-                {hud.wave}
+                Wave {hud.wave}
                 {hud.wave <= hud.targetVictoryWave && (
                   <span className="text-sm font-semibold text-slate-400">/{hud.targetVictoryWave}</span>
                 )}
@@ -147,6 +155,39 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
 
           {/* Utility Buttons */}
           <div className="flex items-center gap-1.5 pointer-events-auto">
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={`Auto-Fire ${hud.autoFire ? 'On' : 'Off'}`}
+              title="Toggle Auto-Fire [F]"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                onToggleAutoFire();
+              }}
+              className={`h-9 px-2.5 rounded-md border text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap ${
+                hud.autoFire
+                  ? 'bg-amber-500 border-amber-400 text-slate-950'
+                  : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700/80 text-slate-300'
+              }`}
+            >
+              <span>Auto [F]</span>
+            </button>
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={`Achievements (${unlockedCount} of ${ACHIEVEMENT_CATALOG.length})`}
+              title="Achievements [T]"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                onOpenAchievements();
+              }}
+              className="h-9 px-2.5 rounded-md bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <TrophyIcon className="w-4 h-4 text-amber-400" />
+              <span className="font-mono-tabular text-xs font-bold text-amber-400">
+                {unlockedCount}/{ACHIEVEMENT_CATALOG.length}
+              </span>
+            </button>
             <button
               type="button"
               tabIndex={-1}
@@ -193,7 +234,8 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
       {/* Bottom Perimeter Left: Remaining Hostiles Integer Indicator */}
       <div className="flex items-end justify-between">
         <div className="text-xs font-medium text-slate-400 tabular-nums hud-stroke">
-          Hostiles Remaining <span className="ml-1.5 font-mono-tabular font-bold text-slate-200">{hud.enemiesRemaining}</span>
+          Hostiles Remaining{' '}
+          <span className="ml-1.5 font-mono-tabular font-bold text-slate-200">{hud.enemiesRemaining}</span>
         </div>
       </div>
     </div>

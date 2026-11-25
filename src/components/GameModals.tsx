@@ -1,5 +1,6 @@
 import React from 'react';
-import type { GamePhase, RunSummary, UpgradeDef, UpgradeId } from '../game/types';
+import { getDifficultyDef, getLevelById } from '../game/rules';
+import type { GamePhase, LevelId, RunSummary, UpgradeDef, UpgradeId } from '../game/types';
 import { UpgradeIcon } from './GameIcons';
 
 interface PauseModalProps {
@@ -7,6 +8,7 @@ interface PauseModalProps {
   wave: number;
   onResume: () => void;
   onRestart: () => void;
+  onOpenAchievements: () => void;
   onTitle: () => void;
 }
 
@@ -15,6 +17,7 @@ export const PauseModal: React.FC<PauseModalProps> = ({
   wave,
   onResume,
   onRestart,
+  onOpenAchievements,
   onTitle,
 }) => (
   <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#070b14]/75 p-4">
@@ -46,6 +49,13 @@ export const PauseModal: React.FC<PauseModalProps> = ({
           className="w-full py-2.5 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors cursor-pointer"
         >
           Resume Flight
+        </button>
+        <button
+          type="button"
+          onClick={onOpenAchievements}
+          className="w-full py-2.5 px-4 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-100 font-medium text-sm transition-colors cursor-pointer"
+        >
+          Flight Milestones
         </button>
         <button
           type="button"
@@ -124,18 +134,26 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
 interface GameOverModalProps {
   summary: RunSummary;
+  showSyncPrompt: boolean;
   onRestart: () => void;
+  onAdvanceLevel: () => void;
   onContinueEndless: () => void;
+  onOpenAccount: () => void;
   onTitle: () => void;
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
   summary,
+  showSyncPrompt,
   onRestart,
+  onAdvanceLevel,
   onContinueEndless,
+  onOpenAccount,
   onTitle,
 }) => {
   const isVictory = summary.outcome === 'victory';
+  const diffLabel = getDifficultyDef(summary.difficulty).label;
+  const nextLevel = summary.hasNextLevel ? getLevelById((summary.levelId + 1) as LevelId) : null;
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#070b14]/78 p-4">
@@ -150,12 +168,12 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
             isVictory ? 'text-amber-400' : 'text-rose-400'
           }`}
         >
-          {isVictory ? 'Sky Bastion Cleared' : 'Aircraft Down'}
+          {isVictory ? `${summary.levelName} Cleared` : 'Aircraft Down'}
         </h2>
         <p className="mt-1 text-sm text-slate-300">
           {isVictory
-            ? 'All six waves and the Solar Titan defeated.'
-            : `Reached Wave ${summary.waveReached} on ${summary.difficulty === 'ace' ? 'Ace Pilot' : 'Standard'} difficulty.`}
+            ? `Cleared on ${diffLabel} difficulty · Recorded in Match History.`
+            : `Downed by ${summary.eliminatedBy || 'Hostile Wing'} at Wave ${summary.waveReached} (${summary.levelName} · ${diffLabel}).`}
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-3">
@@ -190,11 +208,24 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         </div>
 
         <div className="mt-6 flex flex-col gap-2.5">
+          {isVictory && nextLevel && (
+            <button
+              type="button"
+              onClick={onAdvanceLevel}
+              className="w-full py-2.5 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors cursor-pointer"
+            >
+              Advance to {nextLevel.name}
+            </button>
+          )}
           {isVictory && (
             <button
               type="button"
               onClick={onContinueEndless}
-              className="w-full py-2.5 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors cursor-pointer"
+              className={`w-full py-2.5 px-4 rounded-md font-semibold text-sm transition-colors cursor-pointer ${
+                nextLevel
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-100'
+                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+              }`}
             >
               Continue Endless Waves
             </button>
@@ -211,6 +242,15 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           >
             {isVictory ? 'Play Again' : 'Try Again'}
           </button>
+          {showSyncPrompt && (
+            <button
+              type="button"
+              onClick={onOpenAccount}
+              className="w-full py-2 px-4 rounded-md bg-slate-800/80 hover:bg-slate-700 text-sky-300 font-medium text-xs transition-colors cursor-pointer"
+            >
+              Save Progress to a Pilot Callsign
+            </button>
+          )}
           <button
             type="button"
             onClick={onTitle}
@@ -231,11 +271,15 @@ export interface ModalRouterProps {
   upgradeChoices: UpgradeDef[];
   activeUpgrades: Record<UpgradeId, number>;
   summary: RunSummary | null;
+  showSyncPrompt: boolean;
   onResume: () => void;
   onRestart: () => void;
+  onAdvanceLevel: () => void;
   onTitle: () => void;
   onSelectUpgrade: (id: UpgradeId) => void;
   onContinueEndless: () => void;
+  onOpenAchievements: () => void;
+  onOpenAccount: () => void;
 }
 
 export const GameModals: React.FC<ModalRouterProps> = ({
@@ -245,11 +289,15 @@ export const GameModals: React.FC<ModalRouterProps> = ({
   upgradeChoices,
   activeUpgrades,
   summary,
+  showSyncPrompt,
   onResume,
   onRestart,
+  onAdvanceLevel,
   onTitle,
   onSelectUpgrade,
   onContinueEndless,
+  onOpenAchievements,
+  onOpenAccount,
 }) => {
   if (phase === 'paused') {
     return (
@@ -258,6 +306,7 @@ export const GameModals: React.FC<ModalRouterProps> = ({
         wave={wave}
         onResume={onResume}
         onRestart={onRestart}
+        onOpenAchievements={onOpenAchievements}
         onTitle={onTitle}
       />
     );
@@ -278,8 +327,11 @@ export const GameModals: React.FC<ModalRouterProps> = ({
     return (
       <GameOverModal
         summary={summary}
+        showSyncPrompt={showSyncPrompt}
         onRestart={onRestart}
+        onAdvanceLevel={onAdvanceLevel}
         onContinueEndless={onContinueEndless}
+        onOpenAccount={onOpenAccount}
         onTitle={onTitle}
       />
     );
